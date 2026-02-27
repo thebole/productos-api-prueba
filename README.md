@@ -1,59 +1,399 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Productos API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+API RESTful para la gestion de productos y precios en multiples divisas, construida con Laravel 12, PHP 8.5, MySQL 8 y Docker.
 
-## About Laravel
+## Tecnologias
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Laravel 12.53.0** - Framework PHP
+- **PHP 8.5.3** - Con OPcache y JIT habilitados
+- **Eloquent ORM** - ORM integrado de Laravel para el manejo de base de datos
+- **MySQL 8.0** - Base de datos relacional
+- **Docker Compose** - Contenedores (app, nginx, mysql, node)
+- **Laravel Sanctum** - Autenticacion por Bearer Token
+- **Spatie Laravel Permission** - Roles y permisos
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Requisitos Previos
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado y corriendo
+- [Git](https://git-scm.com/)
 
-## Learning Laravel
+## Instalacion y Configuracion
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### 1. Clonar el repositorio
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+git clone <url-del-repositorio>
+cd productos-api-prueba
+```
 
-## Laravel Sponsors
+### 2. Configurar variables de entorno
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Copiar el archivo de ejemplo y ajustar las credenciales si es necesario:
 
-### Premium Partners
+```bash
+cp .env.example .env
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Las variables importantes en `.env`:
 
-## Contributing
+| Variable | Descripcion | Valor por defecto |
+|---|---|---|
+| `DB_HOST` | Host de la base de datos | `db` |
+| `DB_DATABASE` | Nombre de la base de datos | `products` |
+| `DB_USERNAME` | Usuario de MySQL | `laravel` |
+| `DB_PASSWORD` | Contrasena de MySQL | `products_karateka_programador` |
+| `DB_ROOT_PASSWORD` | Contrasena root de MySQL | *(ver .env.example)* |
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 3. Levantar los contenedores Docker
 
-## Code of Conduct
+```bash
+docker compose up -d --build
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Esto creara y levantara los siguientes servicios:
 
-## Security Vulnerabilities
+| Servicio | Contenedor | Puerto |
+|---|---|---|
+| **app** | `laravel_app` | PHP-FPM (interno) |
+| **web** | `laravel_web` | `8080` (nginx) |
+| **db** | `laravel_db` | `3306` (mysql) |
+| **node** | `laravel_node` | `5173` (vite) |
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 4. Instalar dependencias de PHP
 
-## License
+```bash
+docker compose exec app composer install
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 5. Generar la clave de la aplicacion
+
+```bash
+docker compose exec app php artisan key:generate
+```
+
+### 6. Ejecutar las migraciones
+
+Esto crea todas las tablas necesarias (users, products, divisas, products_prices, permisos, tokens):
+
+```bash
+docker compose exec app php artisan migrate
+```
+
+### 7. Ejecutar los seeders
+
+Esto crea los datos iniciales: usuarios, roles, permisos, divisas, productos y precios:
+
+```bash
+docker compose exec app php artisan db:seed
+```
+
+Los seeders ejecutan en orden:
+1. **UsersSeeder** - Crea permisos, roles (admin, editor, viewer) y 3 usuarios de prueba
+2. **DivisasSeeder** - Crea las divisas (Dolar, Euro, Peso Colombiano)
+3. **ProductSeeder** - Crea 5 productos de ejemplo
+4. **ProductsPriceSeeder** - Genera precios por producto en todas las divisas
+
+### 8. (Opcional) Optimizar para rendimiento
+
+```bash
+docker compose exec app php artisan config:cache
+docker compose exec app php artisan route:cache
+docker compose exec app php artisan event:cache
+docker compose exec app composer dump-autoload --optimize
+```
+
+> **Nota:** Si modificas codigo despues de cachear, necesitas limpiar los caches:
+> ```bash
+> docker compose exec app php artisan optimize:clear
+> ```
+
+## La API estara disponible en: `http://localhost:8080/api`
+
+---
+
+## Autenticacion
+
+La API usa **Laravel Sanctum** con Bearer Token. Todos los endpoints (excepto login) requieren autenticacion.
+
+### Login
+
+```
+POST /api/login
+```
+
+**Body (JSON):**
+
+```json
+{
+  "email_username": "admin@example.com",
+  "password": "password"
+}
+```
+
+**Respuesta exitosa (200):**
+
+```json
+{
+  "user": "Admin User",
+  "token": "1|abc123...",
+  "roles": ["admin"],
+  "permissions": ["products.view", "products.create", "products.update", "products.delete", "products.view.price"],
+  "message": "Login successful"
+}
+```
+
+### Logout
+
+```
+POST /api/logout
+Authorization: Bearer <token>
+```
+
+### Usuarios de prueba
+
+| Email | Contrasena | Rol | Permisos |
+|---|---|---|---|
+| `admin@example.com` | `password` | admin | Todos |
+| `operator@example.com` | `password` | editor | view, view.price, create, update |
+| `viewer@example.com` | `password` | viewer | view, view.price |
+
+---
+
+## Endpoints de Productos
+
+Todos los endpoints requieren el header:
+```
+Authorization: Bearer <token>
+```
+
+### Listar productos
+
+```
+GET /api/products?page=1&perPage=15
+```
+
+**Permiso requerido:** `products.view` (validado en el responsable)
+
+**Respuesta (200):** Lista paginada de productos con informacion de paginacion (data, current_page, last_page, per_page, total).
+
+---
+
+### Obtener un producto
+
+```
+GET /api/products/{id}
+```
+
+**Permiso requerido:** `products.view`
+
+**Respuesta (200):**
+
+```json
+{
+  "product": {
+    "id": 1,
+    "name": "Laptop HP Pavilion",
+    "description": "...",
+    "price": "799.99",
+    "tax_cost": "120.00",
+    "manufacturing_cost": "450.00",
+    "divisa_id": 1,
+    "divisa": { ... }
+  }
+}
+```
+
+---
+
+### Crear un producto
+
+```
+POST /api/products
+```
+
+**Permiso requerido:** `products.create`
+
+**Body (JSON):**
+
+```json
+{
+  "name": "Nuevo Producto",
+  "description": "Descripcion del producto",
+  "price": 150.00,
+  "divisa_id": 1
+}
+```
+
+**Campos opcionales:** `tax_cost`, `manufacturing_cost`
+
+**Respuesta (201):**
+
+```json
+{
+  "message": "Product created successfully.",
+  "product": { ... }
+}
+```
+
+---
+
+### Actualizar un producto
+
+```
+PUT /api/products/{id}
+```
+
+**Permiso requerido:** `products.update`
+
+**Body (JSON):** Cualquier campo a actualizar (actualizacion parcial soportada).
+
+```json
+{
+  "name": "Nombre Actualizado",
+  "price": 200.00
+}
+```
+
+**Respuesta (200):**
+
+```json
+{
+  "message": "Product updated successfully.",
+  "product": { ... }
+}
+```
+
+---
+
+### Eliminar un producto
+
+```
+DELETE /api/products/{id}
+```
+
+**Permiso requerido:** `products.delete`
+
+**Respuesta (200):**
+
+```json
+{
+  "message": "Product deleted successfully."
+}
+```
+
+---
+
+## Endpoints de Precios por Producto
+
+### Listar precios de un producto
+
+```
+GET /api/products/{id}/prices?page=1&per_page=15
+```
+
+**Permiso requerido:** `products.view.price`
+
+**Respuesta (200):** Lista paginada de precios con relaciones (producto y divisa).
+
+---
+
+### Crear un precio para un producto
+
+```
+POST /api/products/{id}/prices
+```
+
+**Permiso requerido:** `products.create`
+
+**Body (JSON):**
+
+```json
+{
+  "price": 120.50,
+  "divisa_id": 2
+}
+```
+
+**Respuesta (201):**
+
+```json
+{
+  "message": "Product price created successfully.",
+  "price": { ... }
+}
+```
+
+---
+
+## Codigos de Respuesta
+
+| Codigo | Descripcion |
+|---|---|
+| `200` | Operacion exitosa |
+| `201` | Recurso creado exitosamente |
+| `401` | No autenticado (token faltante o invalido) |
+| `403` | No autorizado (sin permiso suficiente) |
+| `404` | Recurso no encontrado |
+| `422` | Error de validacion |
+
+---
+
+## Tests
+
+Ejecutar los tests unitarios:
+
+```bash
+docker compose exec app php artisan test
+```
+
+Ejecutar solo los tests de productos:
+
+```bash
+docker compose exec app php artisan test --filter="ProductControllerTest|ProductPriceControllerTest"
+```
+
+---
+
+## Estructura del Proyecto
+
+```
+app/
+  Http/
+    Controllers/
+      Auth/AuthController.php
+      Products/ProductController.php
+      Products/ProductPriceController.php
+    Requests/Product/
+      StoreProductRequest.php
+      UpdateProductRequest.php
+      StoreProductPriceRequest.php
+  Models/Api/
+    Product.php
+    Currency/Divisas.php
+    Detail/ProductPrice.php
+  Repositories/Product/
+    ProductRepository.php
+    ProductPricesRepository.php
+  Responsable/Api/
+    Product/
+      AllProductResponsable.php
+      ShowProductResponsable.php
+      CreateProductResponsable.php
+      UpdateProductResponsable.php
+      DeleteProductResponsable.php
+      ListProductPricesResponsable.php
+      CreateProductPriceResponsable.php
+    Security/AuthResponsable.php
+routes/
+  api.php
+  api_routes/
+    auth/auth.php
+    products/products.php
+tests/Feature/
+  ProductControllerTest.php
+  ProductPriceControllerTest.php
+```
+
+## Licencia
+
+Software de codigo abierto bajo la licencia [MIT](https://opensource.org/licenses/MIT).
