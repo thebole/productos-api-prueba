@@ -16,9 +16,9 @@ return new class extends Migration
             $table->string('name', 150);
             $table->text('description')->nullable();
 
-            $table->unsignedDecimal('price', 12, 2);
-            $table->unsignedDecimal('tax_cost', 12, 2)->default(0);
-            $table->unsignedDecimal('manufacturing_cost', 12, 2)->default(0);
+            $table->decimal('price', 12, 2)->unsigned();
+            $table->decimal('tax_cost', 12, 2)->unsigned()->default(0);
+            $table->decimal('manufacturing_cost', 12, 2)->unsigned()->default(0);
 
             $table->foreignId('divisa_id')
                 ->constrained('divisas')
