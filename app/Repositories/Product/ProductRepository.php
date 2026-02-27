@@ -29,7 +29,7 @@ class ProductRepository extends Repository
 
     public function getProductById(int $id): Product
     {
-        return $this->model::where('id', $id);
+        return $this->model::with(self::RELATIONS)->findOrFail($id);
     }
 
 
@@ -55,15 +55,13 @@ class ProductRepository extends Repository
         return $product->delete();
     }
 
-    public function createNewProduct($product): Product
+    public function createNewProduct(array $data): Product
     {
-        return $this->model->create([
-            'name' => $product->name,
-            'description' => $product->description,
-            'price' => $product->price,
-            'tax_cost' => $product->tax_cost,
-            'manufacturing_cost' => $product->manufacturing_cost,
-            'divisa_id' => $product->divisa_id,
+        return $this->model::create([
+            'name' => $data['name'],
+            'description' => $data['description'],
+            'price' => $data['price'],
+            'divisa_id' => $data['divisa_id'],
         ]);
     }
 }

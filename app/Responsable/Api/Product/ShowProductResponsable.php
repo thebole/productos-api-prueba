@@ -6,16 +6,12 @@ use App\Repositories\Product\ProductRepository;
 use Illuminate\Contracts\Support\Responsable;
 use Symfony\Component\HttpFoundation\Response;
 
-class AllProductResponsable implements Responsable
+class ShowProductResponsable implements Responsable
 {
-
     private $repositories;
-    /**
-     * Create a new class instance.
-     */
+
     public function __construct(ProductRepository $productRepository)
     {
-        //
         $this->repositories = (object) [
             'productRepository' => $productRepository
         ];
@@ -23,12 +19,16 @@ class AllProductResponsable implements Responsable
 
     public function toResponse($request)
     {
-        // 
-        $allProducts = $this->repositories->productRepository->allProducts($request->perPage, $request->page);
+        if (!$request->user()->can('products.view')) {
+            return response()->json([
+                'message' => 'Unauthorized. You need the products.view permission.',
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        $product = $this->repositories->productRepository->getProductById($request->route('id'));
+
         return response()->json([
-            'products' => $allProducts,
-            'page'  => $request->page,
-            'perPage' => $request->perPage
+            'product' => $product,
         ], Response::HTTP_OK);
     }
 }
