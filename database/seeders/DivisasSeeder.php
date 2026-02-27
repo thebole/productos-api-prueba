@@ -33,7 +33,7 @@ class DivisasSeeder extends Seeder
         ];
 
         foreach ($divisas as $divisa) {
-            Divisas::createOrUpdate($divisa);
+            Divisas::create($divisa);
         }
     }
 }

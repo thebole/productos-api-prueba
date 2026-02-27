@@ -24,11 +24,7 @@ class AllProductResponsable implements Responsable
     public function toResponse($request)
     {
         // 
-        $allProducts = $this->repositories->productRepository->allProducts($request->perPage, $request->page);
-        return response()->json([
-            'products' => $allProducts,
-            'page'  => $request->page,
-            'perPage' => $request->perPage
-        ], Response::HTTP_OK);
+        $allProducts = $this->repositories->productRepository->allProducts($request->perPage ?? 15, $request->page ?? 1);
+        return response()->json($allProducts, Response::HTTP_OK);
     }
 }
