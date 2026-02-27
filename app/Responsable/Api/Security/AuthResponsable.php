@@ -22,7 +22,9 @@ class AuthResponsable implements Responsable
             'password' => ['required', 'string'],
         ]);
 
-        return $this->login($credentials['email_username'], $credentials['password']);
+
+        $user = $this->login($credentials['email_username'], $credentials['password']);
+        return $user;
     }
 
     private function login(string $username, string $password)
@@ -39,7 +41,7 @@ class AuthResponsable implements Responsable
         $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
-            'user' => $user,
+            'user' => $user->name,
             'token' => $token,
             'roles' => $user->getRoleNames()->values(),
             'permissions' => $user->getAllPermissions()->pluck('name')->values(),
